@@ -1,0 +1,131 @@
+services:
+  # Nginx - Only for production
+  nginx:
+    image: nginx:alpine
+    container_name: novuscap-nginx${CONTAINER_SUFFIX:-}
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+      # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: novuscap-postgres${CONTAINER_SUFFIX:-}
+    env_file:
+            - ${ENV_FILE:-.env}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data${VOLUME_SUFFIX:-}:/var/lib/postgresql/data
+    networks:
+      - novuscap-network
+    restart: ${RESTART_POLICY:-unless-stopped}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: ${HEALTH_RETRIES:-3}
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: novuscap-redis${CONTAINER_SUFFIX:-}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data${VOLUME_SUFFIX:-}:/data
+    networks:
+      - novuscap-network
+    command: >
+      redis-server --appendonly yes
+      ${REDIS_PASSWORD:+--requirepass} ${REDIS_PASSWORD:-}
+    restart: ${RESTART_POLICY:-unless-stopped}
+    healthcheck:
+      test: 
+        - CMD
+        - redis-cli
+        - ${REDIS_PASSWORD:+--auth}
+        - ${REDIS_PASSWORD:-}
+        - ping
+      interval: 30s
+      timeout: 10s
+      retries: ${HEALTH_RETRIES:-3}
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ${BACKEND_DOCKERFILE:-Dockerfile}
+      args:
+        - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+    container_name: novuscap-backend${CONTAINER_SUFFIX:-}
+    env_file:
+      - ${ENV_FILE:-.env}
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ASPNETCORE_URLS=http://+:${BACKEND_INTERNAL_PORT:-5002}
+    ports:
+      - "${BACKEND_PORT:-5002}:${BACKEND_INTERNAL_PORT:-5002}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - novuscap-network
+    restart: ${RESTART_POLICY:-unless-stopped}
+    volumes:
+      - ${LOGS_PATH:-./logs}:/app/logs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${BACKEND_INTERNAL_PORT:-5002}/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: ${HEALTH_RETRIES:-3}
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ${FRONTEND_DOCKERFILE:-Dockerfile}
+      args:
+        - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL:-http://localhost:5002}
+        - REACT_APP_GOOGLE_MAPS_API_KEY=${REACT_APP_GOOGLE_MAPS_API_KEY:-}
+        - REACT_APP_ENVIRONMENT=${REACT_APP_ENVIRONMENT:-development}
+        - NODE_ENV=${NODE_ENV:-development}
+    container_name: novuscap-frontend${CONTAINER_SUFFIX:-}
+    env_file:
+      - ${ENV_FILE:-.env}
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+    ports:
+      - "${FRONTEND_PORT:-3000}:${FRONTEND_INTERNAL_PORT:-80}"
+    depends_on:
+      - backend
+    networks:
+      - novuscap-network
+    restart: ${RESTART_POLICY:-unless-stopped}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${FRONTEND_INTERNAL_PORT:-80} || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: ${HEALTH_RETRIES:-3}
+
+volumes:
+  postgres_data:
+    driver: local
+  postgres_data_prod:
+    driver: local
+  redis_data:
+    driver: local
+  redis_data_prod:
+    driver: local
+
+networks:
+  novuscap-network:
+    driver: bridge

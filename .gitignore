@@ -1,0 +1,8 @@
+node_modules/
+.vs/
+bin/
+obj/
+*.user
+.env
+.env.production
+.env.local

@@ -1,0 +1,112 @@
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: novuscap-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+    networks:
+      - novuscap-network
+  postgres:
+    image: postgres:15-alpine
+    container_name: novuscap-postgres-prod
+    env_file:
+      - .env.production
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - novuscap-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: novuscap-redis-prod
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-your_redis_password}
+    volumes:
+      - redis_data_prod:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - novuscap-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: novuscap-backend-prod
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-novuscapdb};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-your_secure_password};Port=5432
+      - Redis__ConnectionString=redis:6379,password=${REDIS_PASSWORD:-your_redis_password}
+      - JWT__SecretKey=${JWT_SECRET_KEY:-your_jwt_secret_key_min_32_chars}
+      - JWT__Issuer=${JWT_ISSUER:-NovusCap}
+      - JWT__Audience=${JWT_AUDIENCE:-NovusCap-Users}
+      - JWT__AccessTokenExpirationMinutes=60
+      - JWT__RefreshTokenExpirationDays=7
+      - CORS__AllowedOrigins=${FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - novuscap-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ./logs:/app/logs
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        - REACT_APP_API_BASE_URL=${BACKEND_URL:-http://localhost:5000}
+        - REACT_APP_GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+    container_name: novuscap-frontend-prod
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - novuscap-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres_data_prod:
+    driver: local
+  redis_data_prod:
+    driver: local
+
+networks:
+  novuscap-network:
+    driver: bridge

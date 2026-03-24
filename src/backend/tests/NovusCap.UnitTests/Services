@@ -1,0 +1,54 @@
+The contents of the file /novuscap/novuscap/backend/tests/NovusCap.UnitTests/Services should include unit tests for the services in the NovusCap application. Below is a sample implementation for the `AuthServiceTests.cs` file as an example of how to structure the unit tests for the services.
+
+File: /novuscap/novuscap/backend/tests/NovusCap.UnitTests/Services/AuthServiceTests.cs
+
+using Xunit;
+using Moq;
+using NovusCap.Application.Interfaces;
+using NovusCap.Application.Services;
+using NovusCap.Domain.Entities;
+using System.Threading.Tasks;
+
+public class AuthServiceTests
+{
+    private readonly Mock<IUserService> _userServiceMock;
+    private readonly AuthService _authService;
+
+    public AuthServiceTests()
+    {
+        _userServiceMock = new Mock<IUserService>();
+        _authService = new AuthService(_userServiceMock.Object);
+    }
+
+    [Fact]
+    public async Task Login_ValidCredentials_ReturnsToken()
+    {
+        // Arrange
+        var loginDto = new LoginDto { Email = "test@example.com", Password = "password" };
+        var user = new User { Id = Guid.NewGuid(), Email = loginDto.Email, PasswordHash = "hashedPassword" };
+        _userServiceMock.Setup(x => x.GetUserByEmailAsync(loginDto.Email)).ReturnsAsync(user);
+
+        // Act
+        var result = await _authService.Login(loginDto);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<string>(result); // Assuming the result is a token
+    }
+
+    [Fact]
+    public async Task Login_InvalidCredentials_ReturnsNull()
+    {
+        // Arrange
+        var loginDto = new LoginDto { Email = "wrong@example.com", Password = "wrongPassword" };
+        _userServiceMock.Setup(x => x.GetUserByEmailAsync(loginDto.Email)).ReturnsAsync((User)null);
+
+        // Act
+        var result = await _authService.Login(loginDto);
+
+        // Assert
+        Assert.Null(result);
+    }
+}
+
+This file contains unit tests for the `AuthService` class, testing both valid and invalid login scenarios. You can create similar test files for other services such as `UserService` and `OrganizationService` following the same structure.

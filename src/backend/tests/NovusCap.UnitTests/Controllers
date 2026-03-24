@@ -1,0 +1,55 @@
+using Xunit;
+using Moq;
+using NovusCap.Application.Interfaces;
+using NovusCap.WebApi.Controllers;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+
+namespace NovusCap.UnitTests.Controllers
+{
+    public class UsersControllerTests
+    {
+        private readonly Mock<IUserService> _userServiceMock;
+        private readonly UsersController _controller;
+
+        public UsersControllerTests()
+        {
+            _userServiceMock = new Mock<IUserService>();
+            _controller = new UsersController(_userServiceMock.Object);
+        }
+
+        [Fact]
+        public async Task GetUser_ReturnsOkResult_WhenUserExists()
+        {
+            // Arrange
+            var userId = "some-user-id";
+            _userServiceMock.Setup(service => service.GetUserByIdAsync(userId))
+                .ReturnsAsync(new UserDto { Id = userId, Name = "Test User" });
+
+            // Act
+            var result = await _controller.GetUser(userId);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var returnValue = Assert.IsType<UserDto>(okResult.Value);
+            Assert.Equal(userId, returnValue.Id);
+        }
+
+        [Fact]
+        public async Task GetUser_ReturnsNotFound_WhenUserDoesNotExist()
+        {
+            // Arrange
+            var userId = "non-existing-user-id";
+            _userServiceMock.Setup(service => service.GetUserByIdAsync(userId))
+                .ReturnsAsync((UserDto)null);
+
+            // Act
+            var result = await _controller.GetUser(userId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        // Additional tests for other actions (Create, Update, Delete) can be added here
+    }
+}

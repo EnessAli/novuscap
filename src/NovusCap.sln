@@ -1,0 +1,51 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NovusCap.Domain", "backend\src\NovusCap.Domain\NovusCap.Domain.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NovusCap.Application", "backend\src\NovusCap.Application\NovusCap.Application.csproj", "{5D800006-2E7F-4856-8BE6-FC14DD8ECB95}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NovusCap.Infrastructure", "backend\src\NovusCap.Infrastructure\NovusCap.Infrastructure.csproj", "{13D850D6-C0BF-409D-80E4-70033C96EDF8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NovusCap.WebApi", "backend\src\NovusCap.WebApi\NovusCap.WebApi.csproj", "{2EBC37E0-1895-46E1-8267-547FD496088B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NovusCap.UnitTests", "backend\tests\NovusCap.UnitTests\NovusCap.UnitTests.csproj", "{79007E0C-A802-46E6-9933-76FC6639798A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NovusCap.IntegrationTests", "backend\tests\NovusCap.IntegrationTests\NovusCap.IntegrationTests.csproj", "{0E8C9EA6-2382-4139-B7A5-876AF86C3A2A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D800006-2E7F-4856-8BE6-FC14DD8ECB95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D800006-2E7F-4856-8BE6-FC14DD8ECB95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D800006-2E7F-4856-8BE6-FC14DD8ECB95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D800006-2E7F-4856-8BE6-FC14DD8ECB95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13D850D6-C0BF-409D-80E4-70033C96EDF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13D850D6-C0BF-409D-80E4-70033C96EDF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13D850D6-C0BF-409D-80E4-70033C96EDF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13D850D6-C0BF-409D-80E4-70033C96EDF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EBC37E0-1895-46E1-8267-547FD496088B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EBC37E0-1895-46E1-8267-547FD496088B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EBC37E0-1895-46E1-8267-547FD496088B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EBC37E0-1895-46E1-8267-547FD496088B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79007E0C-A802-46E6-9933-76FC6639798A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79007E0C-A802-46E6-9933-76FC6639798A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79007E0C-A802-46E6-9933-76FC6639798A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79007E0C-A802-46E6-9933-76FC6639798A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E8C9EA6-2382-4139-B7A5-876AF86C3A2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E8C9EA6-2382-4139-B7A5-876AF86C3A2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E8C9EA6-2382-4139-B7A5-876AF86C3A2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E8C9EA6-2382-4139-B7A5-876AF86C3A2A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
